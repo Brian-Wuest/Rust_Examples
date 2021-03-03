@@ -1,0 +1,9 @@
+[package]
+name = "server"
+version = "0.1.0"
+authors = ["Brian Wuest <brian.wuest@outlook.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# for SQL stuff; use the "sqlx" crate. sqlx = "0.5.1"
+[dependencies]
