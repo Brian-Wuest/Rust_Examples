@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
-// Copy derived trait requires Clone derived type.
+// Copy derived trait requires Clone derived trait.
 // Note: it is also good practice to include Debug Derived trait on all enum/structs.
 #[derive(Copy, Clone, Debug)]
 pub enum StatusCode {

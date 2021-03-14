@@ -1,8 +1,22 @@
+use crate::http::ParseError;
+use std::convert::TryFrom;
 use std::io::Read;
 use std::net::TcpListener;
-use std::convert::TryFrom;
 // Use "crate" instead of "super" to start at the root of the project to find modules/classes.
 use crate::http::Request;
+use crate::http::Response;
+use crate::http::StatusCode;
+
+pub trait Handler {
+    fn handle_request(&mut self, request: &Request) -> Response;
+
+    // Default implementation for the bad_request function.
+    fn handle_bad_request(&mut self, e: &ParseError) -> Response {
+        println!("Failed to parse request: {}", e);
+
+        Response::new(StatusCode::BadRequest, None)
+    }
+}
 
 // Everything in a module is private by default.
 // use 'pub' to make it public
@@ -34,7 +48,7 @@ impl Server {
         Self { addr: addr }
     }
 
-    pub fn run(self) {
+    pub fn run(self, mut handler: impl Handler) {
         println!("Listening on {}", self.addr);
         let listener = TcpListener::bind(&self.addr).unwrap();
 
@@ -59,26 +73,33 @@ impl Server {
                 // Example: Ok(_)
                 // Example: Ok((stream, _))
                 // Example: _ =>
-                Ok((mut stream, addr)) => {
+                Ok((mut stream, _)) => {
                     // Declares an array filled with zeroes to the specified amount of indexes.
                     let mut buffer = [0; 1024];
                     match stream.read(&mut buffer) {
                         Ok(_) => {
                             // Print the resulting request; using _lossy means that the function could never fail
                             // This allows us to always print the requested data.
-                            println!("Received a request: {}", String::from_utf8_lossy(&buffer));
+                            // println!("Received a request: {}", String::from_utf8_lossy(&buffer));
 
                             // Explicity convert to byte slice using "as" keyword
                             // Request::try_from(&buffer as &[u8]);
 
                             // Convert the buffer to a byte slice containing the entire array.
-                            match Request::try_from(&buffer[..]) {
+                            let response = match Request::try_from(&buffer[..]) {
                                 Ok(request) => {
-                                    dbg!(request);
-                                },
+                                    handler.handle_request(&request)
+                                    // Easiest way to write data to something which impelements the "Write" trait is to use the "write!" macro
+                                    //write!(stream, "{}", response);
+                                }
                                 Err(e) => {
                                     println!("Failed to parse a request: {}", e);
+                                    handler.handle_bad_request(&e)
                                 }
+                            };
+
+                            if let Err(e) = response.send(&mut stream) {
+                                println!("Failed to send response: {}", e);
                             }
                         }
                         Err(e) => {

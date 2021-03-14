@@ -1,13 +1,15 @@
 #![allow(dead_code)]
 
 use server::Server;
-use http::Method;
 use http::Request;
+use website_handler::WebsiteHandler;
+use std::env;
 
 // Finds the server module in the server.rs file.
 // the server module in the server.rs file is implicit based on the file name.
 mod server;
 mod http;
+mod website_handler;
 
 fn main() {
     // String != String literals
@@ -29,13 +31,20 @@ fn main() {
         dbg!(&string_literal);
     */
 
-    let get = Method::GET;
+    // The default path is the current directory (determined by the cargo.toml file)
+    // plus "/public"
+    let default_path = format!("{}\\public", env!("CARGO_MANIFEST_DIR"));
+
+    // If the environment variable does not exist; use the default path instead.
+    let public_path = env::var("PUBLIC_PATH").unwrap_or(default_path);
+
+    /* let get = Method::GET;
     let delete = Method::DELETE;
     let post = Method::POST;
-    let put = Method::PUT;
+    let put = Method::PUT; */
 
     let server = Server::new("127.0.0.1:8080".to_string());
-    server.run();
+    server.run(WebsiteHandler::new(public_path));
 }
 
 /*
