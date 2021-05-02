@@ -1,14 +1,16 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use core::ops::Add;
+
+use actix_web::{App, get, HttpResponse, HttpServer, post, Responder, web};
 use futures::prelude::stream::TryStreamExt;
+use sqlx::{Connection, MssqlPool};
 use sqlx::mssql::MssqlConnectOptions;
 use sqlx::mssql::MssqlRow;
-use sqlx::Connection;
 use sqlx::MssqlConnection;
 use sqlx::Row;
-use crate::db_endpoints::DBEndPoints;
 
-mod db_endpoints;
+/*use crate::db_endpoints::DBEndPoints;
+
+mod db_endpoints;*/
 
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -53,7 +55,7 @@ async fn manual_hello() -> impl Responder {
 }
 
 async fn sql_stuff() -> Result<Vec<String>, sqlx::Error> {
-    let mut connection_options = MssqlConnectOptions::new();
+   let mut connection_options = MssqlConnectOptions::new();
 
     // TCP connections are used to connect to the MSSQL server.
     // Make sure to turn this on in the MS SQL Server Configuration Manager
@@ -62,12 +64,14 @@ async fn sql_stuff() -> Result<Vec<String>, sqlx::Error> {
     connection_options = connection_options.username("sa");
     connection_options = connection_options.password("sql");
 
-    let mut conn: MssqlConnection = MssqlConnection::connect_with(&connection_options).await?;
+    let pool = MssqlPool::connect_with(connection_options).await?;
+
+    //let mut conn: MssqlConnection = MssqlConnection::connect_with(&connection_options).await?;
 
     // Note: Does not support "Image" types. These would have to be converted to VarBinary(Max) during selection.
     // Assuming the same thing would have to be done for "Text" types as they would be converted to VarChar(Max).
     let mut rows =
-        sqlx::query("SELECT EmployeeID, LastName, FirstName FROM Employees").fetch(&mut conn);
+        sqlx::query("SELECT EmployeeID, LastName, FirstName FROM Employees").fetch(&pool);
 
     let mut return_value: Vec<String> = Vec::new();
 

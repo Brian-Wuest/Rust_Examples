@@ -49,21 +49,17 @@ impl DBEndPoints {
     pub async fn somethingCool(request: HttpRequest) -> impl Responder {
         let connectionInfo = request.app_data::<Data<DBEndPoints>>();
         let mut someResults: Vec<String> = Vec::new();
-        match connectionInfo {
-            Some(info) => {
-                let thingers = info.to_owned();
 
-                match thingers.sql_stuff().await {
-                    Ok(results) => {
-                        for result in results {
-                            someResults.push(result.to_owned());
-                        }
-                    },
-                    _ => {}
+        if (connectionInfo.is_some()) {
+            let mut unwrapped_connection_info = connectionInfo.unwrap();
+            let sql_results = unwrapped_connection_info.sql_stuff().await.unwrap();
+
+            if !sql_results.is_empty() {
+                for result in sql_results {
+                    someResults.push(result.to_owned());
                 }
-            },
-            _ => {}
-        };
+            }
+        }
 
         HttpResponse::Ok().body("Sweet")
     }
