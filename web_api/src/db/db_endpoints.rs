@@ -4,7 +4,7 @@ use core::ops::Add;
 use futures::executor;
 use futures::poll;
 use futures::{FutureExt, TryStreamExt};
-use sqlx::Connection;
+use sqlx::{Connection, MssqlPool};
 use sqlx::Error;
 use sqlx::MssqlConnection;
 use sqlx::{
@@ -16,6 +16,7 @@ use std::{borrow::{Borrow, BorrowMut}, ops::{Deref, DerefMut}, time::Duration};
 #[derive(Debug)]
 pub struct DBEndPoints {
     dbConnection: MssqlConnection,
+    connection_pool: MssqlPool
 }
 
 impl DBEndPoints {
@@ -33,8 +34,12 @@ impl DBEndPoints {
             executor::block_on(MssqlConnection::connect_with(&connection_options));
 
         let connection = database_connection.unwrap();
+        let pool_connection = executor::block_on(MssqlPool::connect("mssql://sa:sql@localhost/Northwind"));
+        let pool = pool_connection.unwrap();
+
         DBEndPoints {
             dbConnection: connection,
+            connection_pool: pool
         }
     }
 
@@ -96,11 +101,13 @@ impl DBEndPoints {
         }
     }
 
-    async fn sql_stuff(&mut self) -> Result<Vec<String>, sqlx::Error> {
+    async fn sql_stuff(&self) -> Result<Vec<String>, sqlx::Error> {
+        let connection= &self.connection_pool;
+
         // Note: Does not support "Image" types. These would have to be converted to VarBinary(Max) during selection.
         // Assuming the same thing would have to be done for "Text" types as they would be converted to VarChar(Max).
         let rows = sqlx::query("SELECT EmployeeID, LastName, FirstName FROM Employees")
-            .fetch_all(&mut self.dbConnection)
+            .fetch_all(connection)
             .await?;
 
         let mut return_value: Vec<String> = Vec::new();

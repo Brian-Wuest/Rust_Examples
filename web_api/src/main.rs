@@ -8,9 +8,7 @@ use sqlx::mssql::MssqlRow;
 use sqlx::MssqlConnection;
 use sqlx::Row;
 
-/*use crate::db_endpoints::DBEndPoints;
-
-mod db_endpoints;*/
+mod db;
 
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -90,7 +88,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-            .configure(DBEndPoints::config)
+            .configure(db::DBEndPoints::config)
             .service(hello)
             .service(echo)
             .route("/hey", web::get().to(manual_hello))

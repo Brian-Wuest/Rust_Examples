@@ -2,12 +2,12 @@
 name = "web_api"
 version = "0.1.0"
 authors = ["Brian Wuest <brian.wuest@outlook.com>"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 actix-web = "3.3.2"
-sqlx = { version = "0.5.2", features = [ "runtime-async-std-native-tls", "mssql" ] }
-futures = "0.3"
+sqlx = { version = "0.5.11", features = [ "runtime-async-std-native-tls", "mssql" ] }
+futures = "0.3.14"
 async-std =  { version = "1.9.0", features = [ "attributes" ] }
