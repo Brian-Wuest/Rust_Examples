@@ -1,21 +1,15 @@
-use actix_web::{App, HttpRequest, HttpResponse, HttpServer, Responder, get, post, web::{self, Data}};
-use async_std::task;
+use actix_web::{HttpRequest, HttpResponse, Responder, web::{self, Data}};
 use core::ops::Add;
 use futures::executor;
-use futures::poll;
-use futures::{FutureExt, TryStreamExt};
-use sqlx::{Connection, MssqlPool};
-use sqlx::Error;
-use sqlx::MssqlConnection;
+use sqlx::{MssqlPool};
 use sqlx::{
-    mssql::{MssqlConnectOptions, MssqlRow},
+    mssql::{MssqlConnectOptions},
     Row,
 };
-use std::{borrow::{Borrow, BorrowMut}, ops::{Deref, DerefMut}, time::Duration};
+use std::{time::{Instant}};
 
 #[derive(Debug)]
 pub struct DBEndPoints {
-    dbConnection: MssqlConnection,
     connection_pool: MssqlPool
 }
 
@@ -30,46 +24,53 @@ impl DBEndPoints {
         connection_options = connection_options.username("sa");
         connection_options = connection_options.password("sql");
 
-        let database_connection: Result<MssqlConnection, Error> =
-            executor::block_on(MssqlConnection::connect_with(&connection_options));
+        //let database_connection: Result<MssqlConnection, Error> =
+        //    executor::block_on(MssqlConnection::connect_with(&connection_options));
 
-        let connection = database_connection.unwrap();
-        let pool_connection = executor::block_on(MssqlPool::connect("mssql://sa:sql@localhost/Northwind"));
+        //let connection = database_connection.unwrap();
+        let pool_connection = executor::block_on(MssqlPool::connect_with(connection_options));//MssqlPool::connect("mssql://sa:sql@localhost/Northwind"));
         let pool = pool_connection.unwrap();
 
         DBEndPoints {
-            dbConnection: connection,
             connection_pool: pool
         }
     }
 
     pub fn config(cfg: &mut web::ServiceConfig) {
-        let endpoints = DBEndPoints::new();
+        let endpoints = Data::new(DBEndPoints::new());
 
-        cfg.app_data(endpoints);
+        cfg.app_data(Data::clone(&endpoints));
 
-        cfg.service(web::resource("/app").route(web::get().to(DBEndPoints::somethingCool)));
+        cfg.service(web::resource("/app").route(web::get().to(DBEndPoints::something_cool)));
     }
 
-    pub async fn somethingCool(request: HttpRequest) -> impl Responder {
-        let connectionInfo = request.app_data::<Data<DBEndPoints>>();
-        let mut someResults: Vec<String> = Vec::new();
+    pub async fn something_cool(request: HttpRequest) -> impl Responder {
+        let start = Instant::now();
+        let connection_info = request.app_data::<Data<DBEndPoints>>();
 
-        if (connectionInfo.is_some()) {
-            let mut unwrapped_connection_info = connectionInfo.unwrap();
-            let sql_results = unwrapped_connection_info.sql_stuff().await.unwrap();
+        dbg!("Getting connection information");
 
-            if !sql_results.is_empty() {
-                for result in sql_results {
-                    someResults.push(result.to_owned());
-                }
+        if connection_info.is_some() {
+            dbg!("Found connection information");
+            let unwrapped_connection_info = connection_info.unwrap();
+
+            dbg!("getting sql results through manual_hello");
+
+            let result = unwrapped_connection_info.manual_hello().await;
+
+            dbg!("sql connection information found");
+
+            if !result.is_empty() {
+                let duration = start.elapsed();
+                println!("Time elapsed in something_cool() is: {:?}", duration);
+                return HttpResponse::Ok().body(result);
             }
         }
 
-        HttpResponse::Ok().body("Sweet")
+        HttpResponse::Ok().body("No value")
     }
 
-    async fn manual_hello(&mut self) -> impl Responder {
+    async fn manual_hello(&self) -> String {
         let result = self.sql_stuff().await;
 
         match result {
@@ -92,21 +93,25 @@ impl DBEndPoints {
 
                 result_string = result_string.add("]");
 
-                return HttpResponse::Ok().body(result_string);
+                return result_string;
             }
             Err(error) => {
                 dbg!(error);
-                return HttpResponse::Ok().body("Not So Great!");
+                return "Not So Great!".to_string();
             }
         }
     }
 
     async fn sql_stuff(&self) -> Result<Vec<String>, sqlx::Error> {
         let connection= &self.connection_pool;
-
-        // Note: Does not support "Image" types. These would have to be converted to VarBinary(Max) during selection.
+        /* 
+            Note:
+                Does not support "Image" types. These would have to be converted to VarBinary(Max) during selection.
+                Does not support "money" types. These would have to be converted to decimal during selection.
+            */
         // Assuming the same thing would have to be done for "Text" types as they would be converted to VarChar(Max).
-        let rows = sqlx::query("SELECT EmployeeID, LastName, FirstName FROM Employees")
+        //let rows = sqlx::query("SELECT EmployeeID, LastName, FirstName FROM Employees")
+        let rows = sqlx::query("SELECT CustomerID, ShipName, ShipAddress FROM Orders")
             .fetch_all(connection)
             .await?;
 

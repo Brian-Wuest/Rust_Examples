@@ -2,10 +2,9 @@ use core::ops::Add;
 
 use actix_web::{App, get, HttpResponse, HttpServer, post, Responder, web};
 use futures::prelude::stream::TryStreamExt;
-use sqlx::{Connection, MssqlPool};
+use sqlx::{MssqlPool};
 use sqlx::mssql::MssqlConnectOptions;
 use sqlx::mssql::MssqlRow;
-use sqlx::MssqlConnection;
 use sqlx::Row;
 
 mod db;
