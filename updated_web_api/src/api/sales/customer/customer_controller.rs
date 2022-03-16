@@ -1,4 +1,4 @@
-use actix_web::{HttpRequest, HttpResponse, Responder, web::{self}};
+use actix_web::{HttpRequest, web::{self, Json}, Result};
 
 use crate::DATA_CONTEXT;
 use crate::models::system::Customer;
@@ -12,18 +12,14 @@ impl CustomerController {
         cfg.service(web::resource("/api/sales/customer").route(web::get().to(CustomerController::get_customers)));
     }
 
-    pub async fn get_customers(_request: HttpRequest) -> impl Responder {
+    pub async fn get_customers(_request: HttpRequest) -> Result<Json<Vec<Customer>>> {
         println!("Getting customer information");
 
         let result = CustomerController::get_database_results().await;
 
-        println!("Got Customer Data, serializing it!");
+        println!("Data retreived, sending response");
 
-        let serialized = serde_json::to_string(&result).unwrap();
-
-        println!("Serialization complete, sending response");
-
-        return HttpResponse::Ok().body(serialized);
+        Ok(web::Json(result))
     }
 
     pub async fn get_database_results() -> Vec<Customer> {
