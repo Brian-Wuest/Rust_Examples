@@ -1,0 +1,13 @@
+{
+  "database_info": {
+    "host": "localhost",
+    "port": 61744,
+    "database": "WideWorldImporters",
+    "user_name": "local",
+    "password": "sql"
+  },
+  "web_info": {
+    "host": "127.0.0.1",
+    "port": 8080
+  }
+}
