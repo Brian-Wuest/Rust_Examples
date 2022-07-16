@@ -5,41 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=updated_web_api",
-                    "--package=updated_web_api"
-                ],
-                "filter": {
-                    "name": "updated_web_api",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=updated_web_api",
-                    "--package=updated_web_api"
-                ],
-                "filter": {
-                    "name": "updated_web_api",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
+          "name": "(Windows) Launch",
+          "type": "cppvsdbg",
+          "request": "launch",
+          "program": "${workspaceRoot}/target/debug/updated_web_api.exe",
+          "args": [],
+          "stopAtEntry": false,
+          "cwd": "${workspaceRoot}",
+          "environment": [],
+          "externalConsole": true
         }
     ]
 }
