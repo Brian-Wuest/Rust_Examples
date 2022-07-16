@@ -1,6 +1,7 @@
 use tiberius::time::time::Time;
+use serde::Serialize;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct SimpleTime(pub Time);
 
 impl SimpleTime {

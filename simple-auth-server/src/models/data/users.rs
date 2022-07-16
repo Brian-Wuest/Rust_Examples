@@ -1,3 +1,4 @@
+use serde::Serialize;
 use tiberius::{Row, Uuid};
 
 use crate::data::{
@@ -5,23 +6,23 @@ use crate::data::{
 	date_time::SimpleDateTime,
 };
 
-#[derive(Debug, Clone, Default)]
-pub struct Users {
+#[derive(Debug, Serialize, Clone, Default)]
+pub struct User {
 	pub id: Uuid,
 	pub email: String,
 	pub hash: String,
 	pub created_at: SimpleDateTime,
 }
 
-impl Users {
+impl User {
 	pub async fn load_all_users(data_context: &mut DataContext) -> Vec<Self> {
 		let query = "Select * From dbo.Users;";
 
-		Users::load_collection(&query, data_context).await
+		User::load_collection(&query, data_context).await
 	}
 
 	fn load_from_combined_row(identifier: &Uuid, start_index: &mut usize, row: &Row) -> Self {
-		Users {
+		User {
 			id: *identifier,
 			email: DataTools::get_string_and_increment(start_index, row),
 			hash: DataTools::get_string_and_increment(start_index, row),
@@ -30,13 +31,13 @@ impl Users {
 	}
 }
 
-impl DataElement for Users {
+impl DataElement for User {
 	fn populate_element_from_row(row: tiberius::Row) -> Option<Self>
 	where
 		Self: Sized,
 	{
 		let id: Uuid = row.get(0).unwrap();
 
-		Some(Users::load_from_combined_row(&id, &mut 1, &row))
+		Some(User::load_from_combined_row(&id, &mut 1, &row))
 	}
 }

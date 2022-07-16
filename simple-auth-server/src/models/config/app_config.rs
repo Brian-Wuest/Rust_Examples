@@ -18,6 +18,12 @@ impl AppConfig {
 			.build()
 			.unwrap();
 
-		configuration.try_deserialize().unwrap()
+		match configuration.try_deserialize() {
+			Ok(value) => value,
+			Err(error) => {
+				dbg!(error);
+				panic!("See previous debug message for error");
+			}
+		}
 	}
 }

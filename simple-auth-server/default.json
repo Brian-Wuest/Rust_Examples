@@ -1,10 +1,14 @@
 {
   "database_info": {
     "host": "localhost",
-    "port": 61744,
-    "database": "WideWorldImporters",
+    "port": 64637,
+    "instance": "SQL2019",
+    "database": "Auth_DB",
     "user_name": "local",
-    "password": "sql"
+    "password": "sql",
+    "encrypt_connection": "False",
+    "trust_server_cert": "True",
+    "connection_timeout": 5
   },
   "web_info": {
     "host": "127.0.0.1",

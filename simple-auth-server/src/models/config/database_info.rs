@@ -9,6 +9,9 @@ pub struct DatabaseInfo {
 	pub database: String,
 	pub user_name: String,
 	pub password: String,
+	pub encrypt_connection: String,
+	pub trust_server_cert: String,
+	pub connection_timeout: u16,
 }
 
 impl DatabaseInfo {

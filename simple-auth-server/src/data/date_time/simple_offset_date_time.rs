@@ -1,9 +1,9 @@
 use tiberius::time::time::OffsetDateTime;
-
+use serde::Serialize;
 use super::simple_date_time::SimpleDateTime;
 
 /// This date is used as a wrapper for the tiberius "NaiveDateTime" type. This allows us to specify the default date value.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct SimpleOffsetDateTime(pub OffsetDateTime);
 
 impl SimpleOffsetDateTime {

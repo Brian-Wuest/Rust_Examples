@@ -1,9 +1,10 @@
 use tiberius::time::time::PrimitiveDateTime;
+use serde::Serialize;
 
 use super::{simple_date::SimpleDate, simple_time::SimpleTime};
 
 /// This date is used as a wrapper for the tiberius "NaiveDateTime" type. This allows us to specify the default date value.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct SimpleDateTime(pub PrimitiveDateTime);
 
 impl SimpleDateTime {

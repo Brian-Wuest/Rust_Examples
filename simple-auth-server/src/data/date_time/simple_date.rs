@@ -1,8 +1,9 @@
 use tiberius::time::time::Date;
 use time::Month;
+use serde::Serialize;
 
 /// This date is used as a wrapper for the tiberius "NaiveDate" type. This allows us to specify the default date value.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct SimpleDate(pub Date);
 
 impl SimpleDate {
