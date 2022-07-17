@@ -1,5 +1,19 @@
+// Note: This file only works if you have the "REST Client" extension in Visual Studio Code.
+// Each request most be separated by ###
+// A blank line must be between any headers and the body of the request
+
+###
+GET http://127.0.0.1:8080/api/login HTTP/1.1
+content-type: application/json
+
 ###
 GET http://127.0.0.1:8080/api/users HTTP/1.1
 content-type: application/json
 
 ###
+GET http://127.0.0.1:8080/api HTTP/1.1
+content-type: application/json
+
+###
+GET http://127.0.0.1:8080/api/logout HTTP/1.1
+content-type: application/json

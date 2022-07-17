@@ -4,4 +4,5 @@ use serde::Deserialize;
 pub struct WebInfo {
 	pub host: String,
 	pub port: u16,
+	pub key: String,
 }
