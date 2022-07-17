@@ -12,6 +12,8 @@ pub struct UsersController {}
 
 impl UsersController {
 	pub fn config(cfg: &mut web::ServiceConfig) {
+		// It's not obvious in the current implementation but you can specify multiple HTTP methods for a specific path.
+		// You can specify multiple ".route" calls for different HTTP methods to point to different handlers!
 		cfg.service(web::resource("/api/users").route(web::get().to(UsersController::get_users)));
 		cfg.service(web::resource("/api").route(web::get().to(UsersController::index)));
 		cfg.service(web::resource("/api/login").route(web::get().to(UsersController::login)));
