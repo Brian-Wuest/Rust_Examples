@@ -1,7 +1,8 @@
-use crate::models::data::users::User;
+use crate::models::{data::users::User, request::RegisterUserRequest};
 use crate::DATA_CONTEXT;
 use actix_identity::Identity;
 use actix_session::Session;
+use actix_web::error::ErrorBadRequest;
 use actix_web::{
 	web::{self, Json},
 	HttpMessage, HttpRequest, HttpResponse, Responder, Result,
@@ -14,7 +15,11 @@ impl UsersController {
 	pub fn config(cfg: &mut web::ServiceConfig) {
 		// It's not obvious in the current implementation but you can specify multiple HTTP methods for a specific path.
 		// You can specify multiple ".route" calls for different HTTP methods to point to different handlers!
-		cfg.service(web::resource("/api/users").route(web::get().to(UsersController::get_users)));
+		cfg.service(
+			web::resource("/api/users")
+				.route(web::get().to(UsersController::get_users))
+				.route(web::put().to(UsersController::register)),
+		);
 		cfg.service(web::resource("/api").route(web::get().to(UsersController::index)));
 		cfg.service(web::resource("/api/login").route(web::get().to(UsersController::login)));
 		cfg.service(web::resource("/api/logout").route(web::get().to(UsersController::logout)));
@@ -27,16 +32,16 @@ impl UsersController {
 
 		// attach a verified user identity to the active session
 		Identity::login(&request.extensions(), "User1".into()).unwrap();
-		session.insert("code", "ara01");
 
-		HttpResponse::Ok()
+		match session.insert("code", "ara01") {
+			Ok(_) => HttpResponse::Ok(),
+			Err(_error) => HttpResponse::BadRequest(),
+		}
 	}
 
 	// By using the "Option<Identity>" property we can have special functionality based
 	// On whether or not the user is logged in or not.
-	async fn index(user: Option<Identity>, session: Session, req: HttpRequest) -> Result<String> {
-		log::info!("{req:?}");
-
+	async fn index(user: Option<Identity>, session: Session, _req: HttpRequest) -> Result<String> {
 		if let Some(user) = user {
 			let user_code: String = session.get("code").unwrap().unwrap();
 
@@ -44,6 +49,18 @@ impl UsersController {
 			Ok(welcome_msg)
 		} else {
 			Ok("Welcome Anonymous!".to_owned())
+		}
+	}
+
+	async fn register(form: Json<RegisterUserRequest>) -> Result<String> {
+		// TODO: Try to figure out how to limit the number of registrations can happen from the same IP.
+		let mut context = DATA_CONTEXT.lock().unwrap();
+		match User::load_user_by_name_or_email(&form.name, &form.email, &mut context).await {
+			Some(_) => Err(ErrorBadRequest("User registration already exists")),
+			None => {
+				// user does not exist, able to create user entry.
+				Ok("User Registered Successfully!".to_owned())
+			}
 		}
 	}
 

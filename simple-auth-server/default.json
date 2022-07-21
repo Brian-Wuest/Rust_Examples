@@ -3,7 +3,7 @@
     "host": "localhost",
     "port": 64637,
     "instance": "SQL2019",
-    "database": "Auth_DB",
+    "database": "RecipeFinder",
     "user_name": "local",
     "password": "sql",
     "encrypt_connection": "False",

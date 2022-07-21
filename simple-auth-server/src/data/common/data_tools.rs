@@ -1,4 +1,6 @@
-use tiberius::{numeric::Decimal, time::time::Date, time::time::OffsetDateTime, time::time::PrimitiveDateTime, time::time::Time, Row, Uuid};
+use tiberius::{
+	numeric::Decimal, time::time::Date, time::time::OffsetDateTime, time::time::PrimitiveDateTime, time::time::Time, Row, Uuid,
+};
 
 use crate::data::date_time::{
 	simple_date::SimpleDate, simple_date_time::SimpleDateTime, simple_offset_date_time::SimpleOffsetDateTime, simple_time::SimpleTime,
@@ -94,6 +96,16 @@ impl DataTools {
 		*start_index += 1;
 
 		result
+	}
+
+	pub fn get_varbinary_as_option_and_increment(start_index: &mut usize, row: &Row) -> Option<Vec<u8>> {
+		let result: Option<&[u8]> = row.get(*start_index);
+		*start_index += 1;
+
+		match result {
+			Some(array) => Some(array.to_vec()),
+			None => None,
+		}
 	}
 
 	pub fn get_decimal_as_option_and_increment(start_index: &mut usize, row: &Row) -> Option<Decimal> {

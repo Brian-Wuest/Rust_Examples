@@ -3,6 +3,16 @@
 // A blank line must be between any headers and the body of the request
 
 ###
+PUT http://127.0.0.1:8080/api/users HTTP/1.1
+content-type: application/json
+
+{
+  "name": "bwuest",
+  "email": "brian.wuest@outlook.com",
+  "password": "password1"
+}
+
+###
 GET http://127.0.0.1:8080/api/login HTTP/1.1
 content-type: application/json
 
