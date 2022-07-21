@@ -7,14 +7,19 @@ PUT http://127.0.0.1:8080/api/users HTTP/1.1
 content-type: application/json
 
 {
-  "name": "bwuest",
-  "email": "brian.wuest@outlook.com",
+  "name": "bwuest1",
+  "email": "brian.wuest1@outlook.com",
   "password": "password1"
 }
 
 ###
-GET http://127.0.0.1:8080/api/login HTTP/1.1
+POST http://127.0.0.1:8080/api/login HTTP/1.1
 content-type: application/json
+
+{
+  "name": "bwuest1",
+  "password": "password1"
+}
 
 ###
 GET http://127.0.0.1:8080/api/users HTTP/1.1

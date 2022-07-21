@@ -154,6 +154,11 @@ pub trait DataElement {
 		connection.execute(query, &[]).await
 	}
 
+	async fn insert_with_params<'b>(query: &str, params: &'b [&'b dyn ToSql], data_context: &mut DataContext) -> Result<ExecuteResult> {
+		let connection = &mut data_context.connection_pool.get().await.unwrap();
+		connection.execute(query, params).await
+	}
+
 	// Populates the data element from the specified Row
 	fn populate_element_from_row(row: Row) -> Option<Self>
 	where

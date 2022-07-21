@@ -1,4 +1,6 @@
+use crate::models::request::LoginRequest;
 use crate::models::{data::users::User, request::RegisterUserRequest};
+use crate::util::auth_services;
 use crate::DATA_CONTEXT;
 use actix_identity::Identity;
 use actix_session::Session;
@@ -21,11 +23,11 @@ impl UsersController {
 				.route(web::put().to(UsersController::register)),
 		);
 		cfg.service(web::resource("/api").route(web::get().to(UsersController::index)));
-		cfg.service(web::resource("/api/login").route(web::get().to(UsersController::login)));
+		cfg.service(web::resource("/api/login").route(web::post().to(UsersController::login)));
 		cfg.service(web::resource("/api/logout").route(web::get().to(UsersController::logout)));
 	}
 
-	async fn login(session: Session, request: HttpRequest) -> impl Responder {
+	async fn login(session: Session, request: HttpRequest, form: Json<LoginRequest>) -> impl Responder {
 		// Some kind of authentication should happen here
 		// e.g. password-based, biometric, etc.
 		// [...]
@@ -55,10 +57,28 @@ impl UsersController {
 	async fn register(form: Json<RegisterUserRequest>) -> Result<String> {
 		// TODO: Try to figure out how to limit the number of registrations can happen from the same IP.
 		let mut context = DATA_CONTEXT.lock().unwrap();
-		match User::load_user_by_name_or_email(&form.name, &form.email, &mut context).await {
+		let name = form.name.clone();
+		let email = form.email.clone();
+		let form_pass = form.password.clone();
+
+		match User::load_user_by_name_or_email(&name, &email, &mut context).await {
 			Some(_) => Err(ErrorBadRequest("User registration already exists")),
 			None => {
 				// user does not exist, able to create user entry.
+				// Create the password hash.
+				match auth_services::hash_password(form_pass) {
+					Ok(pass) => {
+						let user = User::new(&name, &email, pass.as_bytes());
+
+						// Insert the user information.
+						// TODO: When this insert is successful, log the user id into the "Identity" object like the login route does.
+						User::insert_new(user, &mut context).await;
+					}
+					Err(error) => {
+						return Err(ErrorBadRequest(error));
+					}
+				}
+
 				Ok("User Registered Successfully!".to_owned())
 			}
 		}
