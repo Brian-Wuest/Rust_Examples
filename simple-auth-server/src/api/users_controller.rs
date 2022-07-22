@@ -3,7 +3,6 @@ use crate::models::{data::users::User, request::RegisterUserRequest};
 use crate::util::auth_services;
 use crate::DATA_CONTEXT;
 use actix_identity::Identity;
-use actix_session::Session;
 use actix_web::error::ErrorBadRequest;
 use actix_web::{
 	web::{self, Json},
@@ -27,34 +26,21 @@ impl UsersController {
 		cfg.service(web::resource("/api/logout").route(web::get().to(UsersController::logout)));
 	}
 
-	async fn login(session: Session, request: HttpRequest, form: Json<LoginRequest>) -> impl Responder {
-		// Some kind of authentication should happen here
-		// e.g. password-based, biometric, etc.
-		// [...]
-
-		// attach a verified user identity to the active session
-		Identity::login(&request.extensions(), "User1".into()).unwrap();
-
-		match session.insert("code", "ara01") {
-			Ok(_) => HttpResponse::Ok(),
-			Err(_error) => HttpResponse::BadRequest(),
-		}
-	}
-
 	// By using the "Option<Identity>" property we can have special functionality based
 	// On whether or not the user is logged in or not.
-	async fn index(user: Option<Identity>, session: Session, _req: HttpRequest) -> Result<String> {
+	async fn index(user: Option<Identity>, _req: HttpRequest) -> Result<String> {
 		if let Some(user) = user {
-			let user_code: String = session.get("code").unwrap().unwrap();
+			// This is an example of how to get some meta data out of the current session cookie
+			//let user_code: String = session.get("code").unwrap().unwrap();
 
-			let welcome_msg = format!("Welcome! {}, Code: {}", user.id().unwrap(), user_code);
+			let welcome_msg = format!("Welcome! {}", user.id().unwrap());
 			Ok(welcome_msg)
 		} else {
 			Ok("Welcome Anonymous!".to_owned())
 		}
 	}
 
-	async fn register(form: Json<RegisterUserRequest>) -> Result<String> {
+	async fn register(form: Json<RegisterUserRequest>, request: HttpRequest) -> Result<String> {
 		// TODO: Try to figure out how to limit the number of registrations can happen from the same IP.
 		let mut context = DATA_CONTEXT.lock().unwrap();
 		let name = form.name.clone();
@@ -71,8 +57,15 @@ impl UsersController {
 						let user = User::new(&name, &email, pass.as_bytes());
 
 						// Insert the user information.
-						// TODO: When this insert is successful, log the user id into the "Identity" object like the login route does.
-						User::insert_new(user, &mut context).await;
+						if User::insert_new(user, &mut context).await {
+							match User::load_user_by_name_or_email(&name, &email, &mut context).await {
+								Some(user) => {
+									// Log the user in so they get the session cookie for future requests.
+									Identity::login(&request.extensions(), user.id.to_string()).unwrap();
+								}
+								None => {}
+							};
+						}
 					}
 					Err(error) => {
 						return Err(ErrorBadRequest(error));
@@ -84,12 +77,33 @@ impl UsersController {
 		}
 	}
 
+	async fn login(request: HttpRequest, form: Json<LoginRequest>) -> impl Responder {
+		let mut context = DATA_CONTEXT.lock().unwrap();
+		match User::load_user_by_name_or_email(&form.name, &form.name, &mut context).await {
+			Some(user) => {
+				// Log the user in so they get the session cookie for future requests.
+				// attach a verified user identity to the active session
+				Identity::login(&request.extensions(), user.id.to_string()).unwrap();
+
+				HttpResponse::Ok()
+			}
+			None => HttpResponse::BadRequest(),
+		}
+
+		// Example of how to add some meta data to the session.
+		// the session object is a parameter of the function.
+		/* match session.insert("code", "ara01") {
+			Ok(_) => HttpResponse::Ok(),
+			Err(_error) => HttpResponse::BadRequest(),
+		} */
+	}
+
 	// In order to log out the user needs to be logged in (having the cookie).
-	async fn logout(user: Identity, session: Session) -> Result<String> {
-		let user_code: String = session.get("code").unwrap().unwrap();
+	async fn logout(user: Identity) -> Result<String> {
+		let user_id = user.id().unwrap().clone();
 		user.logout();
 
-		let logout_msg = format!("User With Code: {} logged out successfully!", user_code);
+		let logout_msg = format!("User With ID: {} logged out successfully!", user_id);
 
 		Ok(logout_msg)
 	}

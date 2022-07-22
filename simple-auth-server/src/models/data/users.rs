@@ -35,16 +35,18 @@ impl User {
 		User::load_single_with_params(query, &[&name.to_owned(), &email.to_owned()], data_context).await
 	}
 
-	pub async fn insert_new(user: Self, data_context: &mut DataContext) {
+	pub async fn insert_new(user: Self, data_context: &mut DataContext) -> bool {
 		let query = "INSERT INTO dbo.Users VALUES(@P1, @P2, @P3, @P4)";
 
 		// TODO: Add general logging for insert errors.
 		match User::insert_with_params(query, &[&user.id, &user.name, &user.email, &user.password], data_context).await {
-			Ok(_) => {}
+			Ok(_) => true,
 			Err(error) => {
-				dbg!(error);
+				dbg!(&error);
+				log::error!("Error During User Insert: {}", error.clone());
+				false
 			}
-		};
+		}
 	}
 
 	fn load_from_combined_row(identifier: &Uuid, start_index: &mut usize, row: &Row) -> Self {
