@@ -23,20 +23,43 @@ impl User {
 		}
 	}
 
+	/// Loads all users registered in the system.
 	pub async fn load_all_users(data_context: &mut DataContext) -> Vec<Self> {
 		let query = "Select * From dbo.Users;";
 
 		User::load_collection(&query, data_context).await
 	}
 
+	/// Loads a single user by the identifier provided.
+	pub async fn load_user_by_id(id: &Uuid, data_context: &mut DataContext) -> Option<Self> {
+		let query = "Select * From dbo.Users Where Id = @P1";
+
+		User::load_single_with_params(query, &[&id.to_owned()], data_context).await
+	}
+
+	/// Loads a user where the name or email matches the supplied values.
 	pub async fn load_user_by_name_or_email(name: &str, email: &str, data_context: &mut DataContext) -> Option<Self> {
-		let query = "Select * From dbo.Users WHERE Name = @P1 OR email = @P2";
+		let query = "Select * From dbo.Users Where Name = @P1 OR email = @P2";
 
 		User::load_single_with_params(query, &[&name.to_owned(), &email.to_owned()], data_context).await
 	}
 
+	/// Updates the password of an existing user.
+	pub async fn update_password(id: &Uuid, new_password: Vec<u8>, data_context: &mut DataContext) -> bool {
+		let query = "Update dbo.Users Set Password = @P1 Where ID = @P2";
+
+		match User::insert_with_params(query, &[&new_password, id], data_context).await {
+			Ok(_) => true,
+			Err(error) => {
+				log::error!("Error During User Insert: {}", error.clone());
+				false
+			}
+		}
+	}
+
+	/// Inserts a new user into the database.
 	pub async fn insert_new(user: Self, data_context: &mut DataContext) -> bool {
-		let query = "INSERT INTO dbo.Users VALUES(@P1, @P2, @P3, @P4)";
+		let query = "Insert Into dbo.Users Values(@P1, @P2, @P3, @P4)";
 
 		// TODO: Add general logging for insert errors.
 		match User::insert_with_params(query, &[&user.id, &user.name, &user.email, &user.password], data_context).await {

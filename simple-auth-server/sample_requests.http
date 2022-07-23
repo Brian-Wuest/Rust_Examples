@@ -4,7 +4,7 @@
 
 ###
 // This is the registration request.
-PUT http://127.0.0.1:8080/api/users HTTP/1.1
+POST http://127.0.0.1:8080/api/users/_register HTTP/1.1
 content-type: application/json
 
 {
@@ -14,7 +14,10 @@ content-type: application/json
 }
 
 ###
-POST http://127.0.0.1:8080/api/login HTTP/1.1
+// Log the user into the system.
+// The user name and password will be verified.
+// If this cannot be verified the response will be "bad-request".
+POST http://127.0.0.1:8080/api/users/_login HTTP/1.1
 content-type: application/json
 
 {
@@ -23,13 +26,26 @@ content-type: application/json
 }
 
 ###
+// Change the password of the current user
+PUT http://127.0.0.1:8080/api/users/_change_pwd HTTP/1.1
+content-type: application/json
+
+{
+  "oldPassword": "password1",
+  "newPassword": "password2"
+}
+
+###
+// Get a list of all of the users.
 GET http://127.0.0.1:8080/api/users HTTP/1.1
 content-type: application/json
 
 ###
+// Hit the index of the api (this is in the users controller because this is an example application.)
 GET http://127.0.0.1:8080/api HTTP/1.1
 content-type: application/json
 
 ###
-GET http://127.0.0.1:8080/api/logout HTTP/1.1
+// Log the user out of the system. This will remove the cookie from the session.
+POST http://127.0.0.1:8080/api/users/_logout HTTP/1.1
 content-type: application/json
