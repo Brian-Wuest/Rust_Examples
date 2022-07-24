@@ -59,6 +59,22 @@ impl DataTools {
 		}
 	}
 
+	pub fn get_i64_and_increment(start_index: &mut usize, row: &Row) -> i64 {
+		let result: Option<i64> = DataTools::get_i64_as_option_and_increment(start_index, row);
+
+		match result {
+			Some(actual_result) => actual_result,
+			None => i64::default(),
+		}
+	}
+
+	pub fn get_i64_as_option_and_increment(start_index: &mut usize, row: &Row) -> Option<i64> {
+		let result: Option<i64> = row.get(*start_index);
+		*start_index += 1;
+
+		result
+	}
+
 	pub fn get_i32_and_increment(start_index: &mut usize, row: &Row) -> i32 {
 		let result: Option<i32> = DataTools::get_i32_as_option_and_increment(start_index, row);
 

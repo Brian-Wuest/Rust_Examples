@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 use crate::models::config::AppConfig;
-use crate::{api::UsersController, data::common::DataContext};
+use crate::{api::CategoryController, api::UsersController, data::common::DataContext};
 use actix_identity::config::LogoutBehaviour;
 use actix_identity::IdentityMiddleware;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
@@ -105,6 +105,7 @@ async fn main() -> std::io::Result<()> {
 					.build(),
 			)
 			.configure(UsersController::config)
+			.configure(CategoryController::config)
 	})
 	.bind(host_address)?
 	.run()

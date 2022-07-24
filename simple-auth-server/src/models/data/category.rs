@@ -4,18 +4,13 @@ use tiberius::Row;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Category {
-	pub id: i32,
+	pub id: i64,
 	pub name: String,
-	pub parent_category_id: Option<i32>,
 }
 
 impl Category {
-	pub fn new(id: i32, name: String, parent_category_id: Option<i32>) -> Self {
-		Category {
-			id,
-			name,
-			parent_category_id,
-		}
+	pub fn new(id: i64, name: String) -> Self {
+		Category { id, name }
 	}
 
 	/// Retrieves all categories from the system.
@@ -25,11 +20,10 @@ impl Category {
 		Category::load_collection(&query, data_context).await
 	}
 
-	fn load_from_combined_row(id: &i32, start_index: &mut usize, row: &Row) -> Self {
+	pub(crate) fn load_from_combined_row(id: &i64, start_index: &mut usize, row: &Row) -> Self {
 		Category {
 			id: *id,
 			name: DataTools::get_string_and_increment(start_index, row),
-			parent_category_id: DataTools::get_i32_as_option_and_increment(start_index, row),
 		}
 	}
 }
@@ -39,7 +33,7 @@ impl DataElement for Category {
 	where
 		Self: Sized,
 	{
-		let id: i32 = row.get(0).unwrap();
+		let id: i64 = row.get(0).unwrap();
 
 		Some(Category::load_from_combined_row(&id, &mut 1, &row))
 	}
