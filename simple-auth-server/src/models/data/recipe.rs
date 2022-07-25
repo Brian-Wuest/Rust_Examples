@@ -9,14 +9,14 @@ pub struct Recipe {
 	name: String,
 	ingredients: String,
 	instructions: String,
-	category_id: i32,
+	category_id: i64,
 	shared: bool,
 }
 
 impl Recipe {
 	/// Retrieves all categories from the system.
-	pub async fn load_all_recipes(data_context: &mut DataContext) -> Vec<Self> {
-		let query = "Select * From dbo.Recipe;";
+	pub async fn load_all_shared_recipes(data_context: &mut DataContext) -> Vec<Self> {
+		let query = "Select * From dbo.Recipe Where Shared = 1;";
 
 		Recipe::load_collection(&query, data_context).await
 	}
@@ -28,7 +28,7 @@ impl Recipe {
 			name: DataTools::get_string_and_increment(start_index, row),
 			ingredients: DataTools::get_string_and_increment(start_index, row),
 			instructions: DataTools::get_string_and_increment(start_index, row),
-			category_id: DataTools::get_i32_and_increment(start_index, row),
+			category_id: DataTools::get_i64_and_increment(start_index, row),
 			shared: DataTools::get_bool_and_increment(start_index, row),
 		}
 	}

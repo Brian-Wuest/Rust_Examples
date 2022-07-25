@@ -1,12 +1,13 @@
 #[macro_use]
 extern crate lazy_static;
+use crate::api::RecipeController;
 use crate::models::config::AppConfig;
 use crate::{api::CategoryController, api::UsersController, data::common::DataContext};
 use actix_identity::config::LogoutBehaviour;
 use actix_identity::IdentityMiddleware;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::cookie::Key;
-use actix_web::middleware::Logger;
+use actix_web::middleware::{Compress, Logger};
 use actix_web::{App, HttpServer};
 use futures::executor;
 use std::sync::Mutex;
@@ -90,6 +91,7 @@ async fn main() -> std::io::Result<()> {
 	// Create the Web Host.
 	HttpServer::new(move || {
 		App::new()
+			.wrap(Compress::default())
 			.wrap(Logger::default())
 			.wrap(
 				IdentityMiddleware::builder()
@@ -106,6 +108,7 @@ async fn main() -> std::io::Result<()> {
 			)
 			.configure(UsersController::config)
 			.configure(CategoryController::config)
+			.configure(RecipeController::config)
 	})
 	.bind(host_address)?
 	.run()

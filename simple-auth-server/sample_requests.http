@@ -54,3 +54,8 @@ content-type: application/json
 // Get a list of all recipe categories.
 GET http://127.0.0.1:8080/api/category HTTP/1.1
 content-type: application/json
+
+###
+// Get a list of all shared recipes.
+GET http://127.0.0.1:8080/api/recipe HTTP/1.1
+content-type: application/json
