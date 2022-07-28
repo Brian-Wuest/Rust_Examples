@@ -76,6 +76,8 @@ fn generate_key() -> Vec<u8> {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 	// TODO: Set this to WARN or ERROR when in production modes.
+	// Note: Setting environment variables like this are only good for the current execution of the application
+	// When this application stops and restarts these environment settings but be re-configured if desired.
 	std::env::set_var("RUST_LOG", "info");
 	env_logger::init();
 
