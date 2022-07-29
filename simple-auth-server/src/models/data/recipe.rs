@@ -14,7 +14,7 @@ pub struct Recipe {
 }
 
 impl Recipe {
-	/// Retrieves all categories from the system.
+	/// Retrieves all recipes from the system.
 	pub async fn load_all_shared_recipes(data_context: &mut DataContext) -> Vec<Self> {
 		let query = "Select * From dbo.Recipe Where Shared = 1;";
 
