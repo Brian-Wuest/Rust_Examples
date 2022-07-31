@@ -1,16 +1,16 @@
-use actix_web::{HttpRequest, HttpResponse, Responder, web::{self, Data}};
+use actix_web::{
+    web::{self, Data},
+    HttpRequest, HttpResponse, Responder,
+};
 use core::ops::Add;
 use futures::executor;
-use sqlx::{MssqlPool};
-use sqlx::{
-    mssql::{MssqlConnectOptions},
-    Row,
-};
-use std::{time::{Instant}};
+use sqlx::MssqlPool;
+use sqlx::{mssql::MssqlConnectOptions, Row};
+use std::time::Instant;
 
 #[derive(Debug)]
 pub struct DBEndPoints {
-    connection_pool: MssqlPool
+    connection_pool: MssqlPool,
 }
 
 impl DBEndPoints {
@@ -20,7 +20,7 @@ impl DBEndPoints {
         // TCP connections are used to connect to the MSSQL server.
         // Make sure to turn this on in the MS SQL Server Configuration Manager
         connection_options = connection_options.database("Northwind");
-        connection_options = connection_options.host("localhost");
+        connection_options = connection_options.host("GAIA\\SQL2019");
         connection_options = connection_options.username("sa");
         connection_options = connection_options.password("sql");
 
@@ -28,11 +28,11 @@ impl DBEndPoints {
         //    executor::block_on(MssqlConnection::connect_with(&connection_options));
 
         //let connection = database_connection.unwrap();
-        let pool_connection = executor::block_on(MssqlPool::connect_with(connection_options));//MssqlPool::connect("mssql://sa:sql@localhost/Northwind"));
+        let pool_connection = executor::block_on(MssqlPool::connect_with(connection_options)); //MssqlPool::connect("mssql://sa:sql@localhost/Northwind"));
         let pool = pool_connection.unwrap();
 
         DBEndPoints {
-            connection_pool: pool
+            connection_pool: pool,
         }
     }
 
@@ -103,12 +103,12 @@ impl DBEndPoints {
     }
 
     async fn sql_stuff(&self) -> Result<Vec<String>, sqlx::Error> {
-        let connection= &self.connection_pool;
-        /* 
-            Note:
-                Does not support "Image" types. These would have to be converted to VarBinary(Max) during selection.
-                Does not support "money" types. These would have to be converted to decimal during selection.
-            */
+        let connection = &self.connection_pool;
+        /*
+        Note:
+            Does not support "Image" types. These would have to be converted to VarBinary(Max) during selection.
+            Does not support "money" types. These would have to be converted to decimal during selection.
+        */
         // Assuming the same thing would have to be done for "Text" types as they would be converted to VarChar(Max).
         //let rows = sqlx::query("SELECT EmployeeID, LastName, FirstName FROM Employees")
         let rows = sqlx::query("SELECT CustomerID, ShipName, ShipAddress FROM Orders")

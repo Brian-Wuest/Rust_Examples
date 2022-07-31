@@ -1,10 +1,10 @@
 use core::ops::Add;
 
-use actix_web::{App, get, HttpResponse, HttpServer, post, Responder, web};
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use futures::prelude::stream::TryStreamExt;
-use sqlx::{MssqlPool};
 use sqlx::mssql::MssqlConnectOptions;
 use sqlx::mssql::MssqlRow;
+use sqlx::MssqlPool;
 use sqlx::Row;
 
 mod db;
@@ -52,7 +52,7 @@ async fn manual_hello() -> impl Responder {
 }
 
 async fn sql_stuff() -> Result<Vec<String>, sqlx::Error> {
-   let mut connection_options = MssqlConnectOptions::new();
+    let mut connection_options = MssqlConnectOptions::new();
 
     // TCP connections are used to connect to the MSSQL server.
     // Make sure to turn this on in the MS SQL Server Configuration Manager
@@ -83,11 +83,9 @@ async fn sql_stuff() -> Result<Vec<String>, sqlx::Error> {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    
-
     HttpServer::new(|| {
         App::new()
-            .configure(db::DBEndPoints::config)
+            //.configure(db::DBEndPoints::config)
             .service(hello)
             .service(echo)
             .route("/hey", web::get().to(manual_hello))
