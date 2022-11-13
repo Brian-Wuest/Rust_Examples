@@ -1,0 +1,45 @@
+How to generate rust documentation, this will only generate document for current project and exclude dependencies
+	cargo doc --no-deps
+
+Generate and open documentation
+	cargo doc --no-deps --open
+
+-------------------------Documentation
+	Use mark-down (like github's) to write documentation.
+	Write general description then headers as the general description is what is shown before clicking into the details of the item.
+
+	Line Comments: ///
+	Block Comments: /** */
+
+	Inner documentation done like this: /*! */
+		Useed to document library/file instead of a particular field/struct/function
+
+	Turbo Fish: ::<>
+		Called this because the brackets are fish and the colons are the bubbles (going fast!)
+		Example Code: v.into_iter().sum::<i32>();
+	
+	What can implement a trait?
+		struct
+		enum
+		closure
+		function
+	
+	Common Traits:
+		Debug - Used for debug formatting.
+			Pretty debug formatting: "println!(":#?}", thing);
+		Clone - Allows value to be cloned, making a new thing (allocates new object)
+		Copy - Copied instead of moved for copy situations.
+			If type uses heap, thenit cannot be copied, must be cloned.
+			Sub-Trait of Clone so Clone must also be derived.
+		
+		Traits to manually implement
+			Default: Allows you to default fields to some initial values.
+				// This allows you to use default values for most fields and customize values for others.
+				let puzzel = Puzzel {
+					num_pieces: 3000,
+					..Default::default()
+				};
+
+			PartialEq/Eq:
+
+			From/Into: Implement "From" and you get "Into" for free!
